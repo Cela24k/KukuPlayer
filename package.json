@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "discord.js": "^14.14.1",
-    "dotenv": "^16.4.1"
+    "dotenv": "^16.4.1",
+    "ytdl-core": "^4.11.5"
   },
   "scripts": {
     "start": "node kukumain.js",

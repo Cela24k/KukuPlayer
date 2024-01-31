@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { downloadByUrl } = require('../../core/kuku-ytdl-core'); 
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,7 +10,13 @@ module.exports = {
                 .setDescription('Name of the song searched on yt')
                 .setMaxLength(2000)),
     async execute(interaction) {
-        console.log(interaction)
-        await interaction.reply('dsdsds');
+        const input = interaction.options.getString('input');
+
+        // metodo per il download 
+        await downloadByUrl(input).then((res)=>{
+            console.log(res)
+        })
+
+        await interaction.reply('Sassa!');
     },
 };

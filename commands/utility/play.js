@@ -11,13 +11,18 @@ module.exports = {
                 .setDescription('Name of the song searched on yt')
                 .setMaxLength(2000)),
     async execute(interaction) {
-        const input = interaction.options.getString('input');
-        const voiceChannel = interaction.member.voice.channel
-        // metodo per il download 
-        await downloadByUrl(input).then((res) => {
-            AudioPlayer.play(res, voiceChannel.guild.id, voiceChannel.id, interaction.guild.voiceAdapterCreator)
-        })
+        try {
+            const input = interaction.options.getString('input');
+            const voiceChannel = interaction.member.voice.channel
+            // metodo per il download 
+            await downloadByUrl(input).then((res) => {
+                AudioPlayer.play(res, voiceChannel.guild.id, voiceChannel.id, interaction.guild.voiceAdapterCreator)
+            })
 
-        await interaction.reply('Song messa bro lol!');
+            await interaction.reply('Song messa bro lol!');
+        } catch (err) {
+            console.log(err)
+            await interaction.reply('An error has occurred')
+        }
     },
 };

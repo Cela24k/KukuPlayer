@@ -24,7 +24,7 @@ module.exports = {
 
             // download 
             await downloadFile(input, format).then(async (res)=>{
-                const attachment = new AttachmentBuilder(res, 'audio.mp3');
+                const attachment = new AttachmentBuilder(res, `audio.${format}`);
                 await interaction.followUp('ciao', { files: [attachment] });
             })
 

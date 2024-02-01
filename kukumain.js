@@ -4,8 +4,6 @@ const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 require('dotenv').config()
 const token = process.env.TOKEN;
 
-console.log(token)
-
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
 

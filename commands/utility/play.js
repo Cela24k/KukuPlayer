@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { downloadAudio } = require('../../core/kuku-ytdl-core');
+const { downloadByUrl } = require('../../core/kuku-ytdl-core');
 const AudioPlayer = require('../../core/kuku-audioplayer.js');
+const fromKeywordToUrl = require('../../core/kuku-utils.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,11 +15,13 @@ module.exports = {
         try {
             const input = interaction.options.getString('input');
             const voiceChannel = interaction.member.voice.channel;
+            const formattedInput = await fromKeywordToUrl(input);
+
             // metodo per il download 
-            await downloadAudio(input).then((res) => {
+            await downloadByUrl(formattedInput).then((res) => {
                 AudioPlayer.play(res, voiceChannel.guild.id, voiceChannel.id, interaction.guild.voiceAdapterCreator)
             })
-
+            
             await interaction.reply('Song messa bro lol!');
         } catch (err) {
             console.log(err)

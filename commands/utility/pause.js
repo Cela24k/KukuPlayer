@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { downloadByUrl } = require('../../core/kuku-ytdl-core');
 const AudioPlayer = require('../../core/kuku-audioplayer.js');
 
 module.exports = {

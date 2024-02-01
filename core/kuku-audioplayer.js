@@ -25,9 +25,9 @@ class AudioPlayer {
     }
     //in questo metodo creiamo l'audioresource da streammare, controlliamo se siamo gia in un voicechannel, e in caso lo facciamo joinare
     static play(song, guildId, channelId, voiceAdapter) {
-        const audioResource = createAudioResource(song)
-        let connection = getVoiceConnection(guildId, channelId)
-        const player = this.getPlayer()
+        const audioResource = createAudioResource(song);
+        let connection = getVoiceConnection(guildId, channelId);
+        const player = this.getPlayer();
         if (!connection) {
             connection = joinVoiceChannel({
                 channelId: channelId,
@@ -35,9 +35,21 @@ class AudioPlayer {
                 adapterCreator: voiceAdapter,
             })
         }
-        //qui invece subscribiamo l'audio player per farlo riprodurre nel canale
-        connection.subscribe(player)
-        player.play(audioResource)
+        // qui invece subscribiamo l'audio player per farlo riprodurre nel canale
+        connection.subscribe(player);
+        // TODO catchare eventuali errori
+        player.play(audioResource);
+        console.log(player)
+    }
+
+    static pause(){
+        const player = this.getPlayer();
+        if(player){
+            console.log(player.state.status === 'playing')
+            console.log(player)
+            const response = player.pause(true)
+            return response;
+        }
     }
 }
 module.exports = AudioPlayer

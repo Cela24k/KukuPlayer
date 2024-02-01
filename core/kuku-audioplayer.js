@@ -39,7 +39,7 @@ class AudioPlayer {
         }
         // qui invece subscribiamo l'audio player per farlo riprodurre nel canale
         connection.subscribe(player);
-        // TODO catchare eventuali errori
+        // TODO catchare eventuali errori della play
         player.play(audioResource);
         console.log(player)
     }
@@ -50,6 +50,16 @@ class AudioPlayer {
             const response = player.pause(true)
             return response;
         }
+        // TODO handling se non sta riproducendo
+    }
+
+    static unpause(){
+        const player = this.getPlayer();
+        if(player.state.status === 'paused'){
+            const response = player.unpause();
+            return response;
+        }
+        // TODO handling se non è paused
     }
 }
 module.exports = AudioPlayer

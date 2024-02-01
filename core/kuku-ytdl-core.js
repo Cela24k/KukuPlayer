@@ -4,7 +4,7 @@ const fromKeywordToUrl = require('./kuku-utils')
 
 
 module.exports = {
-    downloadByUrl: async (url) => {
+    downloadAudio: async (url) => {
         const download = ytdl(url, { filter: 'audioonly' });
         return download;
     },
@@ -12,6 +12,9 @@ module.exports = {
         const url = await fromKeywordToUrl(keyword);
         const download = ytdl(url, { filter: 'audioonly' })
         return download;
-    }
-
+    },
+    downloadFile: async (url, format = 'mp3') =>{
+        const download = format === 'mp3' ? this.downloadAudio(url) : ytdl(url);
+        return download;
+    },
 }

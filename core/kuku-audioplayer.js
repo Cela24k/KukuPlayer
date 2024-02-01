@@ -15,11 +15,13 @@ class AudioPlayer {
 
     static getPlayer() {
         if (!AudioPlayer._instance) {
+            AudioPlayer._instance = this;
             this.player = createAudioPlayer({
                 behaviors: {
                     noSubscriber: NoSubscriberBehavior.Pause,
                 },
             });
+            console.log(this.player)
         }
         return this.player
     }
@@ -42,11 +44,9 @@ class AudioPlayer {
         console.log(player)
     }
 
-    static pause(){
+    static pause() {
         const player = this.getPlayer();
-        if(player){
-            console.log(player.state.status === 'playing')
-            console.log(player)
+        if (player.state.status === 'playing') {
             const response = player.pause(true)
             return response;
         }

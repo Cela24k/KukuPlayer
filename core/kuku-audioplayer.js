@@ -24,38 +24,50 @@ class AudioPlayer {
             console.log(this.player)
         }
         return this.player
+        // return AudioPlayer._instance || new AudioPlayer()
     }
     //in questo metodo creiamo l'audioresource da streammare, controlliamo se siamo gia in un voicechannel, e in caso lo facciamo joinare
     static play(song, guildId, channelId, voiceAdapter) {
-        const audioResource = createAudioResource(song);
-        let connection = getVoiceConnection(guildId, channelId);
-        const player = this.getPlayer();
-        if (!connection) {
-            connection = joinVoiceChannel({
-                channelId: channelId,
-                guildId: guildId,
-                adapterCreator: voiceAdapter,
-            })
+        try {
+            const audioResource = createAudioResource(song);
+            let connection = getVoiceConnection(guildId, channelId);
+            console.log(connection)
+            const player = this.getPlayer();
+            console.log(player)
+            if (!connection) {
+                connection = joinVoiceChannel({
+                    channelId: channelId,
+                    guildId: guildId,
+                    adapterCreator: voiceAdapter,
+                })
+            }
+            // qui invece subscribiamo l'audio player per farlo riprodurre nel canale
+            connection.subscribe(player);
+            // TODO catchare eventuali errori della play
+            player.play(audioResource);
         }
-        // qui invece subscribiamo l'audio player per farlo riprodurre nel canale
-        connection.subscribe(player);
-        // TODO catchare eventuali errori della play
-        player.play(audioResource);
-        console.log(player)
+        catch (error) {
+            throw error;
+        }
     }
 
     static pause() {
-        const player = this.getPlayer();
-        if (player.state.status === 'playing') {
-            const response = player.pause(true)
-            return response;
+        try {
+            const player = this.getPlayer();
+            if (player.state.status === 'playing') {
+                const response = player.pause(true)
+                return response;
+            }
+        }
+        catch (error) {
+            throw error;
         }
         // TODO handling se non sta riproducendo
     }
 
-    static unpause(){
+    static unpause() {
         const player = this.getPlayer();
-        if(player.state.status === 'paused'){
+        if (player.state.status === 'paused') {
             const response = player.unpause();
             return response;
         }

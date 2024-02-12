@@ -12,7 +12,6 @@ module.exports = {
 	async execute(interaction) {
 		const mimmo = interaction.options.getString('input')
 		const url = await fromKeywordToUrl(mimmo);
-		console.log(url)
 		await interaction.reply('Pong!');
 	},
 };

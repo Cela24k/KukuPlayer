@@ -8,7 +8,6 @@ module.exports = {
     async execute(interaction) {
         try {
             const response = AudioPlayer.pause();
-            console.log(response)
             if (response)
                 await interaction.reply('Successfully paused the track!');
             else

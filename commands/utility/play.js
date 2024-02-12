@@ -21,7 +21,7 @@ module.exports = {
             await downloadByUrl(formattedInput).then((res) => {
                 AudioPlayer.play(res, voiceChannel.guild.id, voiceChannel.id, interaction.guild.voiceAdapterCreator)
             })
-            
+
             await interaction.reply('Song messa bro lol!');
         } catch (err) {
             console.log(err)

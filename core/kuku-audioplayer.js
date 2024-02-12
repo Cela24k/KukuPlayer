@@ -21,7 +21,6 @@ class AudioPlayer {
                     noSubscriber: NoSubscriberBehavior.Pause,
                 },
             });
-            console.log(this.player)
         }
         return this.player
         // return AudioPlayer._instance || new AudioPlayer()
@@ -31,9 +30,7 @@ class AudioPlayer {
         try {
             const audioResource = createAudioResource(song);
             let connection = getVoiceConnection(guildId, channelId);
-            console.log(connection)
             const player = this.getPlayer();
-            console.log(player)
             if (!connection) {
                 connection = joinVoiceChannel({
                     channelId: channelId,

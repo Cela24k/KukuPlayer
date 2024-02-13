@@ -18,9 +18,9 @@ module.exports = {
             const formattedInput = await fromKeywordToUrl(input);
 
             // metodo per il download 
-            await downloadByUrl(formattedInput).then((res) => {
-                AudioPlayer.play(res, voiceChannel.guild.id, voiceChannel.id, interaction.guild.voiceAdapterCreator)
-            })
+            const song = await downloadByUrl(formattedInput);
+            AudioPlayer.play(song, voiceChannel.guild.id, voiceChannel.id, interaction.guild.voiceAdapterCreator);
+
 
             await interaction.reply('Song messa bro lol!');
         } catch (err) {

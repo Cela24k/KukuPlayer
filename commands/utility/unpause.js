@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const AudioPlayer = require('../../core/kuku-audioplayer.js');
+const AudioPlayerPool = require('../../core/kuku-playerpool.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -7,7 +7,9 @@ module.exports = {
         .setDescription('Unpause the track'),
     async execute(interaction) {
         try {
-            const response = AudioPlayer.unpause();
+            const voiceChannel = interaction.member.voice.channel;
+            const response = AudioPlayerPool.unpause(voiceChannel.id);
+            console.log(response)
             if (response)
                 await interaction.reply('Successfully resumed the track!');
             else

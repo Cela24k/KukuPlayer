@@ -1,58 +1,58 @@
-const { createAudioPlayer, getVoiceConnection, NoSubscriberBehavior, createAudioResource, joinVoiceChannel } = require('@discordjs/voice');
+const { createAudioPlayer, getVoiceConnection, NoSubscriberBehavior, createAudioResource, joinVoiceChannel, AudioPlayerStatus } = require('@discordjs/voice');
 
 class AudioPlayer {
-    constructor() {
-        if (AudioPlayer._instance) {
-            return AudioPlayer._instance;
-        }
-        AudioPlayer._instance = this;
+    constructor(channelId) {
+        this.channelId = channelId;
+        this.isPlaying = false;
+        this.queue = [];
         this.player = createAudioPlayer({
             behaviors: {
                 noSubscriber: NoSubscriberBehavior.Pause,
             },
         });
+        this.connection = null;
+        this.player.on(AudioPlayerStatus.Playing, () => {
+            // this.play(this.queue.pop()) 
+            console.log(`The audio player has started playing in channel ${channelId} !`);
+        });
     }
 
-    static getPlayer() {
-        if (!AudioPlayer._instance) {
-            AudioPlayer._instance = this;
-            this.player = createAudioPlayer({
-                behaviors: {
-                    noSubscriber: NoSubscriberBehavior.Pause,
-                },
-            });
-        }
-        return this.player
-        // return AudioPlayer._instance || new AudioPlayer()
-    }
-    //in questo metodo creiamo l'audioresource da streammare, controlliamo se siamo gia in un voicechannel, e in caso lo facciamo joinare
-    static play(song, guildId, channelId, voiceAdapter) {
+    // TODO lasciare solo la song come parametro spostando la connessione nel costruttore del player, in modo da poi invocare this.play a riga 15, senza causare cadute della connessione
+    play(song, guildId, channelId, voiceAdapter) {
         try {
             const audioResource = createAudioResource(song);
-            let connection = getVoiceConnection(guildId, channelId);
-            const player = this.getPlayer();
-            if (!connection) {
-                connection = joinVoiceChannel({
+            this.connection = getVoiceConnection(guildId, channelId);
+            if (!this.connection) {
+                this.connection = joinVoiceChannel({
                     channelId: channelId,
                     guildId: guildId,
                     adapterCreator: voiceAdapter,
                 })
             }
             // qui invece subscribiamo l'audio player per farlo riprodurre nel canale
-            connection.subscribe(player);
+            this.connection.subscribe(this.player);
             // TODO catchare eventuali errori della play
-            player.play(audioResource);
+            console.log(this.isPlaying);
+            console.log(this.queue);
+            if(this.isPlaying){
+                this.queue.push(audioResource);
+            }
+            else{
+                this.player.play(audioResource);
+                this.isPlaying = true;
+            }
         }
         catch (error) {
+            this.isPlaying = false;
             throw error;
         }
     }
 
-    static pause() {
+    pause() {
         try {
-            const player = this.getPlayer();
-            if (player.state.status === 'playing') {
-                const response = player.pause(true)
+            if (this.player.state.status === 'playing') {
+                const response = this.player.pause(true);
+                this.isPlaying = false;
                 return response;
             }
         }
@@ -62,13 +62,21 @@ class AudioPlayer {
         // TODO handling se non sta riproducendo
     }
 
-    static unpause() {
-        const player = this.getPlayer();
-        if (player.state.status === 'paused') {
-            const response = player.unpause();
+    unpause() {
+        if (this.player.state.status === 'paused') {
+            const response = this.player.unpause();
+            this.isPlaying = true;
             return response;
         }
         // TODO handling se non è paused
+    }
+
+    stop(){
+        if (this.player.state.status === 'playing') {
+            this.isPlaying = false;
+            this.connection.destroy();
+        }
+        //TODO handling se non e playing
     }
 }
 module.exports = AudioPlayer

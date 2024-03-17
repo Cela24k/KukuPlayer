@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const AudioPlayer = require('../../core/kuku-audioplayer.js');
-const AudioPlayerPool = require('../../core/kuku-playerpool.js');
+const AudioPlayerQueue = require('../../core/kuku-player-queue.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,7 +9,7 @@ module.exports = {
     async execute(interaction) {
         try {
             const voiceChannel = interaction.member.voice.channel;
-            const response = AudioPlayerPool.pause(voiceChannel.id);
+            const response = AudioPlayerQueue.pause(voiceChannel.id);
             
             if (response)
                 await interaction.reply('Successfully paused the track!');

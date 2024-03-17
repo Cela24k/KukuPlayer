@@ -1,7 +1,7 @@
 const ytdl = require('ytdl-core');
-const youtubedl = require('youtube-dl-exec')
-const axios = require('axios')
-const fs = require('fs')
+const youtubedl = require('youtube-dl-exec');
+const axios = require('axios');
+const fs = require('fs');
 
 module.exports = {
     downloadByUrl: async (url) => {

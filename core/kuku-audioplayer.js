@@ -1,8 +1,9 @@
 const { createAudioPlayer, getVoiceConnection, NoSubscriberBehavior, createAudioResource, joinVoiceChannel, AudioPlayerStatus } = require('@discordjs/voice');
 
 class AudioPlayer {
-    constructor(channelId) {
+    constructor(channelId, guildId, voiceAdapter) {
         this.channelId = channelId;
+        this.guildId = guildId;
         this.isPlaying = false;
         this.queue = [];
         this.player = createAudioPlayer({
@@ -10,17 +11,7 @@ class AudioPlayer {
                 noSubscriber: NoSubscriberBehavior.Pause,
             },
         });
-        this.connection = null;
-        this.player.on(AudioPlayerStatus.Playing, () => {
-            // this.play(this.queue.pop()) 
-            console.log(`The audio player has started playing in channel ${channelId} !`);
-        });
-    }
-
-    // TODO lasciare solo la song come parametro spostando la connessione nel costruttore del player, in modo da poi invocare this.play a riga 15, senza causare cadute della connessione
-    play(song, guildId, channelId, voiceAdapter) {
         try {
-            const audioResource = createAudioResource(song);
             this.connection = getVoiceConnection(guildId, channelId);
             if (!this.connection) {
                 this.connection = joinVoiceChannel({
@@ -31,13 +22,31 @@ class AudioPlayer {
             }
             // qui invece subscribiamo l'audio player per farlo riprodurre nel canale
             this.connection.subscribe(this.player);
+            this.player.on(AudioPlayerStatus.Idle, () => {
+                if (this.queue.length != 0) {
+                    console.log('ciao');
+                    this.player.play(this.queue.pop());
+                }
+                else {
+                    this.isPlaying = false
+                }
+            });
+        }
+        catch (error) {
+            this.isPlaying = false;
+            throw error;
+        }
+    }
+
+    // TODO lasciare solo la song come parametro spostando la connessione nel costruttore del player, in modo da poi invocare this.play a riga 15, senza causare cadute della connessione
+    play(song) {
+        try {
+            const audioResource = createAudioResource(song);
             // TODO catchare eventuali errori della play
-            console.log(this.isPlaying);
-            console.log(this.queue);
-            if(this.isPlaying){
+            if (this.isPlaying) {
                 this.queue.push(audioResource);
             }
-            else{
+            else {
                 this.player.play(audioResource);
                 this.isPlaying = true;
             }
@@ -71,7 +80,7 @@ class AudioPlayer {
         // TODO handling se non è paused
     }
 
-    stop(){
+    stop() {
         if (this.player.state.status === 'playing') {
             this.isPlaying = false;
             this.connection.destroy();

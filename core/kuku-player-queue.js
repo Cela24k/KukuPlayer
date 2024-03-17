@@ -1,31 +1,36 @@
 const AudioPlayer = require("./kuku-audioplayer");
 
-class AudioPlayerPool {
+class AudioPlayerQueue {
     static players = [];
-    
+
     constructor() {
-        if (this instanceof AudioPlayerPool) {
+        if (this instanceof AudioPlayerQueue) {
             throw Error('A static class cannot be instantiated.');
         }
     }
 
     static play(song, guildId, channelId, voiceAdapter) {
         let found = false;
-        for (const player of AudioPlayerPool.players) {
-            if (player.channelId === channelId) {
-                player.play(song, guildId, channelId, voiceAdapter);
-                found = true;
+        try {
+
+            for (const player of AudioPlayerQueue.players) {
+                if (player.channelId === channelId) {
+                    player.play(song);
+                    found = true;
+                }
             }
-        }
-        if (!found) {
-            const player = new AudioPlayer(channelId);
-            AudioPlayerPool.players.push(player);
-            player.play(song, guildId, channelId, voiceAdapter);
+            if (!found) {
+                const player = new AudioPlayer(channelId, guildId, voiceAdapter);
+                AudioPlayerQueue.players.push(player);
+                player.play(song);
+            }
+        } catch (error) {
+            console.log('error... 😢');
         }
     }
 
     static pause(channelId) {
-        for (const player of AudioPlayerPool.players) {
+        for (const player of AudioPlayerQueue.players) {
             if (player.channelId === channelId) {
                 return player.pause();
             }
@@ -34,7 +39,7 @@ class AudioPlayerPool {
     }
 
     static unpause(channelId) {
-        for (const player of AudioPlayerPool.players) {
+        for (const player of AudioPlayerQueue.players) {
             if (player.channelId === channelId) {
                 return player.unpause();
             }
@@ -44,7 +49,7 @@ class AudioPlayerPool {
 
     // TODO: togliere il player dall array di players
     static stop(channelId) {
-        for (const player of AudioPlayerPool.players) {
+        for (const player of AudioPlayerQueue.players) {
             if (player.channelId === channelId) {
                 return player.stop();
             }
@@ -52,4 +57,4 @@ class AudioPlayerPool {
     }
 }
 
-module.exports = AudioPlayerPool
+module.exports = AudioPlayerQueue

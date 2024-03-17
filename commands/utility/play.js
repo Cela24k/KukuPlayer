@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { downloadByUrl } = require('../../core/kuku-ytdl-core');
 // const AudioPlayer = require('../../core/kuku-audioplayer.js');
 const fromKeywordToUrl = require('../../core/kuku-utils.js');
-const AudioPlayerPool = require('../../core/kuku-playerpool.js');
+const AudioPlayerQueue = require('../../core/kuku-player-queue.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,7 +22,7 @@ module.exports = {
             await interaction.reply('Song messa bro lol!');
             const song = await downloadByUrl(formattedInput);
             // AudioPlayer.play(song, voiceChannel.guild.id, voiceChannel.id, interaction.guild.voiceAdapterCreator);
-            AudioPlayerPool.play(song, voiceChannel.guild.id, voiceChannel.id, interaction.guild.voiceAdapterCreator);
+            AudioPlayerQueue.play(song, voiceChannel.guild.id, voiceChannel.id, interaction.guild.voiceAdapterCreator);
 
         } catch (err) {
             console.log(err)

@@ -29,7 +29,7 @@ module.exports = {
                 liveBuffer: 1 << 62,
                 dlChunkSize: 0, //disabling chunking is recommended in discord bot
                 bitrate: 128,
-                quality: "lowestaudio",
+                // quality: "lowestaudio",
            });
             return download;
         } catch (error) {

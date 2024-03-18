@@ -24,7 +24,6 @@ class AudioPlayer {
             this.connection.subscribe(this.player);
             this.player.on(AudioPlayerStatus.Idle, () => {
                 if (this.queue.length != 0) {
-                    console.log('ciao');
                     this.player.play(this.queue.pop());
                 }
                 else {
@@ -44,11 +43,13 @@ class AudioPlayer {
             const audioResource = createAudioResource(song);
             // TODO catchare eventuali errori della play
             if (this.isPlaying) {
-                this.queue.push(audioResource);
+                this.queue.unshift(audioResource);
+                return true;
             }
             else {
                 this.player.play(audioResource);
                 this.isPlaying = true;
+                return false;
             }
         }
         catch (error) {
@@ -78,6 +79,13 @@ class AudioPlayer {
             return response;
         }
         // TODO handling se non è paused
+    }
+    
+    playNext(){
+        if(this.queue.length === 0)
+            return false;
+        this.player.play(this.queue.pop());
+        return true;
     }
 
     stop() {

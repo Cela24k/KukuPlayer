@@ -9,20 +9,22 @@ class AudioPlayerQueue {
         }
     }
 
+
+    // returns true if the song is not put in queue but instantly played instead
     static play(song, guildId, channelId, voiceAdapter) {
         let found = false;
         try {
-
             for (const player of AudioPlayerQueue.players) {
                 if (player.channelId === channelId) {
-                    player.play(song);
+                    const isQueued = player.play(song);
                     found = true;
+                    return isQueued;
                 }
             }
             if (!found) {
                 const player = new AudioPlayer(channelId, guildId, voiceAdapter);
                 AudioPlayerQueue.players.push(player);
-                player.play(song);
+                return player.play(song);
             }
         } catch (error) {
             console.log('error... 😢');
@@ -47,6 +49,14 @@ class AudioPlayerQueue {
         return false;
     }
 
+    static skip(channelId) {
+        for (const player of AudioPlayerQueue.players) {
+            if (player.channelId === channelId) {
+                return player.playNext();
+            }
+        }
+        return false;
+    }
     // TODO: togliere il player dall array di players
     static stop(channelId) {
         for (const player of AudioPlayerQueue.players) {

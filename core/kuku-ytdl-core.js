@@ -21,7 +21,20 @@ module.exports = {
         }
     },
     downloadFile: async (url, format = 'mp3') => {
-        const download = format === 'mp3' ? this.downloadAudio(url) : ytdl(url);
-        return download;
+        try {
+            const download = ytdl(url , {
+                filter: "audioonly",
+                fmt: "mp3",
+                highWaterMark: 1 << 62,
+                liveBuffer: 1 << 62,
+                dlChunkSize: 0, //disabling chunking is recommended in discord bot
+                bitrate: 128,
+                quality: "lowestaudio",
+           });
+            return download;
+        } catch (error) {
+            console.error('Error during download:', error);
+            throw error;
+        }
     },
 }

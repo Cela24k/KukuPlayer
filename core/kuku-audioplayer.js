@@ -2,6 +2,7 @@ const { createAudioPlayer, getVoiceConnection, NoSubscriberBehavior, createAudio
 
 class AudioPlayer {
     constructor(channelId, guildId, voiceAdapter) {
+        this.voiceAdapter = voiceAdapter;
         this.channelId = channelId;
         this.guildId = guildId;
         this.isPlaying = false;
@@ -11,89 +12,94 @@ class AudioPlayer {
                 noSubscriber: NoSubscriberBehavior.Pause,
             },
         });
-        try {
-            this.connection = getVoiceConnection(guildId, channelId);
-            if (!this.connection) {
-                this.connection = joinVoiceChannel({
-                    channelId: channelId,
-                    guildId: guildId,
-                    adapterCreator: voiceAdapter,
-                })
-            }
-            // qui invece subscribiamo l'audio player per farlo riprodurre nel canale
-            this.connection.subscribe(this.player);
-            this.player.on(AudioPlayerStatus.Idle, () => {
-                if (this.queue.length != 0) {
-                    this.player.play(this.queue.pop());
-                }
-                else {
-                    this.isPlaying = false
-                }
+
+        this.initializeConnection();
+        this.initializeEventHandlers();
+    }
+
+    initializeConnection() {
+        this.connection = getVoiceConnection(this.guildId, this.channelId);
+        if (!this.connection) {
+            this.connection = joinVoiceChannel({
+                channelId: this.channelId,
+                guildId: this.guildId,
+                adapterCreator: this.voiceAdapter,
             });
         }
-        catch (error) {
-            this.isPlaying = false;
-            throw error;
+        this.connection.subscribe(this.player);
+    }
+
+    initializeEventHandlers() {
+        this.player.on(AudioPlayerStatus.Idle, () => {
+            this.playNextOrStop();
+        });
+    }
+
+    playNextOrStop() {
+        if (this.queue.length !== 0) {
+            this.player.play(this.queue.pop());
+        } else {
+            this.stop();
         }
     }
 
-    // TODO lasciare solo la song come parametro spostando la connessione nel costruttore del player, in modo da poi invocare this.play a riga 15, senza causare cadute della connessione
     play(song) {
-        try {
-            const audioResource = createAudioResource(song);
-            // TODO catchare eventuali errori della play
-            if (this.isPlaying) {
-                this.queue.unshift(audioResource);
-                return true;
-            }
-            else {
-                this.player.play(audioResource);
-                this.isPlaying = true;
-                return false;
-            }
-        }
-        catch (error) {
-            this.isPlaying = false;
-            throw error;
+        const audioResource = createAudioResource(song);
+        if (this.isPlaying || this.queue.length > 0) {
+            this.queue.unshift(audioResource);
+            return true;
+        } else {
+            this.player.play(audioResource);
+            this.isPlaying = true;
+            return false;
         }
     }
 
     pause() {
-        try {
-            if (this.player.state.status === 'playing') {
-                const response = this.player.pause(true);
-                this.isPlaying = false;
-                return response;
-            }
+        if (this.player.state.status === AudioPlayerStatus.Playing) {
+            this.player.pause(true);
+            this.isPlaying = false;
+            return true;
         }
-        catch (error) {
-            throw error;
-        }
-        // TODO handling se non sta riproducendo
+        return false;
     }
 
     unpause() {
-        if (this.player.state.status === 'paused') {
-            const response = this.player.unpause();
+        if (this.player.state.status === AudioPlayerStatus.Paused) {
+            this.player.unpause();
             this.isPlaying = true;
-            return response;
+            return true;
         }
-        // TODO handling se non è paused
+        return false;
     }
-    
-    playNext(){
-        if(this.queue.length === 0)
+
+    playNext() {
+        if (this.queue.length === 0) {
+            this.stop();
             return false;
+        }
         this.player.play(this.queue.pop());
         return true;
     }
 
     stop() {
-        if (this.player.state.status === 'playing') {
-            this.isPlaying = false;
+        this.isPlaying = false;
+        this.connection.destroy();
+    }
+
+    goToBed() {
+        this.isPlaying = false;
+        const newChannelId = this.guildId === '778945436941680661' ? '938572937894715482' : null;
+        if (newChannelId) {
+            this.connection = joinVoiceChannel({
+                channelId: newChannelId,
+                guildId: this.guildId,
+                adapterCreator: this.voiceAdapter,
+            });
+        } else {
             this.connection.destroy();
         }
-        //TODO handling se non e playing
     }
 }
-module.exports = AudioPlayer
+
+module.exports = AudioPlayer;

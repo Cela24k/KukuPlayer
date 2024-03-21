@@ -2,6 +2,7 @@ const { createAudioPlayer, getVoiceConnection, NoSubscriberBehavior, createAudio
 
 class AudioPlayer {
     constructor(channelId, guildId, voiceAdapter) {
+        this.voiceAdapter = voiceAdapter;
         this.channelId = channelId;
         this.guildId = guildId;
         this.isPlaying = false;
@@ -20,14 +21,22 @@ class AudioPlayer {
                     adapterCreator: voiceAdapter,
                 })
             }
-            // qui invece subscribiamo l'audio player per farlo riprodurre nel canale
             this.connection.subscribe(this.player);
             this.player.on(AudioPlayerStatus.Idle, () => {
+
+                // sostituire con playNext ma non va perche non legge la funzione
                 if (this.queue.length != 0) {
                     this.player.play(this.queue.pop());
                 }
                 else {
-                    this.isPlaying = false
+                    this.isPlaying = false;
+                    if (this.guildId === '778945436941680661')
+                        this.connection = joinVoiceChannel({
+                            channelId: '938572937894715482',
+                            guildId: this.guildId,
+                            adapterCreator: this.voiceAdapter,
+                        })
+                    else this.connection.destroy();
                 }
             });
         }
@@ -37,16 +46,26 @@ class AudioPlayer {
         }
     }
 
-    // TODO lasciare solo la song come parametro spostando la connessione nel costruttore del player, in modo da poi invocare this.play a riga 15, senza causare cadute della connessione
     play(song) {
         try {
             const audioResource = createAudioResource(song);
+            
             // TODO catchare eventuali errori della play
-            if (this.isPlaying) {
+            if (this.isPlaying || this.queue.length > 0) {
                 this.queue.unshift(audioResource);
                 return true;
             }
             else {
+                // this.connection = getVoiceConnection(guildId, channelId);
+
+                this.connection = joinVoiceChannel({
+                    channelId: this.channelId,
+                    guildId: this.guildId,
+                    adapterCreator: this.voiceAdapter,
+                })
+
+                this.connection.subscribe(this.player);
+
                 this.player.play(audioResource);
                 this.isPlaying = true;
                 return false;
@@ -80,10 +99,12 @@ class AudioPlayer {
         }
         // TODO handling se non è paused
     }
-    
-    playNext(){
-        if(this.queue.length === 0)
+
+    playNext() {
+        if (this.queue.length === 0) {
+            this.goToBed();
             return false;
+        }
         this.player.play(this.queue.pop());
         return true;
     }
@@ -94,6 +115,17 @@ class AudioPlayer {
             this.connection.destroy();
         }
         //TODO handling se non e playing
+    }
+
+    goToBed() {
+        this.isPlaying = false;
+        if (this.guildId === '778945436941680661')
+            this.connection = joinVoiceChannel({
+                channelId: '938572937894715482',
+                guildId: this.guildId,
+                adapterCreator: this.voiceAdapter,
+            })
+        else this.connection.destroy();
     }
 }
 module.exports = AudioPlayer

@@ -39,12 +39,14 @@ class AudioPlayer {
         if (this.queue.length !== 0) {
             this.player.play(this.queue.pop());
         } else {
-            this.stop();
+            this.goToBed();
         }
     }
 
     play(song) {
         const audioResource = createAudioResource(song);
+        this.initializeConnection();
+
         if (this.isPlaying || this.queue.length > 0) {
             this.queue.unshift(audioResource);
             return true;
@@ -75,7 +77,7 @@ class AudioPlayer {
 
     playNext() {
         if (this.queue.length === 0) {
-            this.stop();
+            this.goToBed();
             return false;
         }
         this.player.play(this.queue.pop());
@@ -97,7 +99,7 @@ class AudioPlayer {
                 adapterCreator: this.voiceAdapter,
             });
         } else {
-            this.connection.destroy();
+            this.stop()
         }
     }
 }

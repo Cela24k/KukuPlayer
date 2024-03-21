@@ -12,92 +12,67 @@ class AudioPlayer {
                 noSubscriber: NoSubscriberBehavior.Pause,
             },
         });
-        try {
-            this.connection = getVoiceConnection(guildId, channelId);
-            if (!this.connection) {
-                this.connection = joinVoiceChannel({
-                    channelId: channelId,
-                    guildId: guildId,
-                    adapterCreator: voiceAdapter,
-                })
-            }
-            this.connection.subscribe(this.player);
-            this.player.on(AudioPlayerStatus.Idle, () => {
 
-                // sostituire con playNext ma non va perche non legge la funzione
-                if (this.queue.length != 0) {
-                    this.player.play(this.queue.pop());
-                }
-                else {
-                    this.isPlaying = false;
-                    if (this.guildId === '778945436941680661')
-                        this.connection = joinVoiceChannel({
-                            channelId: '938572937894715482',
-                            guildId: this.guildId,
-                            adapterCreator: this.voiceAdapter,
-                        })
-                    else this.connection.destroy();
-                }
+        this.initializeConnection();
+        this.initializeEventHandlers();
+    }
+
+    initializeConnection() {
+        this.connection = getVoiceConnection(this.guildId, this.channelId);
+        if (!this.connection) {
+            this.connection = joinVoiceChannel({
+                channelId: this.channelId,
+                guildId: this.guildId,
+                adapterCreator: this.voiceAdapter,
             });
         }
-        catch (error) {
-            this.isPlaying = false;
-            throw error;
+        this.connection.subscribe(this.player);
+    }
+
+    initializeEventHandlers() {
+        this.player.on(AudioPlayerStatus.Idle, () => {
+            this.playNextOrStop();
+        });
+    }
+
+    playNextOrStop() {
+        if (this.queue.length !== 0) {
+            this.player.play(this.queue.pop());
+        } else {
+            this.goToBed();
         }
     }
 
     play(song) {
-        try {
-            const audioResource = createAudioResource(song);
-            
-            // TODO catchare eventuali errori della play
-            if (this.isPlaying || this.queue.length > 0) {
-                this.queue.unshift(audioResource);
-                return true;
-            }
-            else {
-                // this.connection = getVoiceConnection(guildId, channelId);
+        const audioResource = createAudioResource(song);
+        this.initializeConnection();
 
-                this.connection = joinVoiceChannel({
-                    channelId: this.channelId,
-                    guildId: this.guildId,
-                    adapterCreator: this.voiceAdapter,
-                })
-
-                this.connection.subscribe(this.player);
-
-                this.player.play(audioResource);
-                this.isPlaying = true;
-                return false;
-            }
-        }
-        catch (error) {
-            this.isPlaying = false;
-            throw error;
+        if (this.isPlaying || this.queue.length > 0) {
+            this.queue.unshift(audioResource);
+            return true;
+        } else {
+            this.player.play(audioResource);
+            this.isPlaying = true;
+            return false;
         }
     }
 
     pause() {
-        try {
-            if (this.player.state.status === 'playing') {
-                const response = this.player.pause(true);
-                this.isPlaying = false;
-                return response;
-            }
+        if (this.player.state.status === AudioPlayerStatus.Playing) {
+            this.player.pause(true);
+            this.isPlaying = false;
+            return true;
         }
-        catch (error) {
-            throw error;
-        }
-        // TODO handling se non sta riproducendo
+        return false;
     }
 
     unpause() {
-        if (this.player.state.status === 'paused') {
-            const response = this.player.unpause();
+        if (this.player.state.status === AudioPlayerStatus.Paused) {
+            this.player.unpause();
             this.isPlaying = true;
-            return response;
+            return true;
         }
-        // TODO handling se non è paused
+        return false;
     }
 
     playNext() {
@@ -110,11 +85,22 @@ class AudioPlayer {
     }
 
     stop() {
-        if (this.player.state.status === 'playing') {
-            this.isPlaying = false;
-            this.connection.destroy();
+        this.isPlaying = false;
+        this.connection.destroy();
+    }
+
+    goToBed() {
+        this.isPlaying = false;
+        const newChannelId = this.guildId === '778945436941680661' ? '938572937894715482' : null;
+        if (newChannelId) {
+            this.connection = joinVoiceChannel({
+                channelId: newChannelId,
+                guildId: this.guildId,
+                adapterCreator: this.voiceAdapter,
+            });
+        } else {
+            this.stop()
         }
-        //TODO handling se non e playing
     }
 
     goToBed() {
@@ -128,4 +114,5 @@ class AudioPlayer {
         else this.connection.destroy();
     }
 }
-module.exports = AudioPlayer
+
+module.exports = AudioPlayer;
